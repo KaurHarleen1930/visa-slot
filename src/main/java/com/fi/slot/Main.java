@@ -57,24 +57,27 @@ public class Main {
                 Element element = document.getElementById("vsloc-f1-f2");
                 //           sendEmail(element);
                 StringBuilder emailMessage = new StringBuilder();
+                StringBuilder availableList = new StringBuilder();
                 boolean emailToBeSent= false;
                 Elements elements = element.getElementsByTag("tr");
+                emailMessage.append("<table style=\"\"><tbody>");
                 for (Element element1 : elements) {
                     System.out.println(element1.text());
-                    emailMessage.append(element1.text()+"<br>\n");
+                    emailMessage.append("<tr>"+element1.html()+"</tr>");
                     if (element1.child(3).hasClass("earliest") && !(element1.getElementsByClass("earliest").text().equals("N/A"))) {
                         Elements earliest = element1.getElementsByClass("earliest");
                         if (checkDate(earliest)) {
                           //  System.out.println("Book slot for - date - " + element1.text());
                             String allAvailableDates = getDetails(element1);
-                            emailMessage.append("<div><span style=\"background-color: yellow;\">*********** BOOK SLOT FOR - DATE DETAILS ***********\n<br>" +element1.text()+"<br></div></span>\n");
-                            emailMessage.append("<div><span style=\"background-color: LightYellow;\">*********** Available Dates for this location ***********\n<br>"+allAvailableDates+"<br></div></span>\n");
+                            emailMessage.append("<tr style=\"background-color: yellow;\">" +element1.html()+"</tr>");
+                            availableList.append(allAvailableDates);
                             emailToBeSent = true;
                         }
                     }
                 }
                 if(emailToBeSent) {
-                    System.out.println(emailMessage);
+                    emailMessage.append("</tbody></table>").append(availableList);
+         //           System.out.println(emailMessage);
                     sendEmail(emailMessage);
                 }
                 Thread.sleep(120000);
@@ -104,10 +107,12 @@ public class Main {
         Document document = Jsoup.parse(sb.toString());
         Elements allAvailableDates = document.getElementsByClass("updated");
         StringBuilder availDates = new StringBuilder();
+        availDates.append("<summary role><strong>Latest Availability</strong></summary><table><thead><tr><th>Slots</th><th>Location</th><th>Visa</th><th>Year</th><th>Dates</th><th>Last Updated</th></tr></thead><tbody>");
         for(Element availableDates: allAvailableDates){
-            availDates = availDates.append(availableDates.parents().get(0).text()+"<br>\n");
+
+            availDates = availDates.append("<tr style=\"background-color: LightYellow;\">"+availableDates.parents().get(0).html()+"</tr>");
         }
-        return availDates.toString();
+        return availDates.append("</tbody></table>").toString();
     }
 
     private static void sendEmail(StringBuilder emailMessage) {
@@ -136,7 +141,7 @@ public class Main {
             message.addRecipients(Message.RecipientType.TO, new InternetAddress(to[1]).toString());
             message.addRecipients(Message.RecipientType.TO, new InternetAddress(to[2]).toString());
             message.setSubject("Slot Update, Book slot now!!");
-            message.setContent("<html><head><style>body { font-family: Arial, sans-serif; }</style></head><body><h1> Slots - </h1><p>"+ emailMessage.toString() + "</p></body></html>","text/html");
+            message.setContent("<html><head><style>table, th, td {border: 1px solid black; border-collapse: collapse;}</style></head><body><h1> Slots - </h1>"+ emailMessage.toString() + "</body></html>","text/html");
             Transport.send(message);
 //            helper.setTo(emails);
 //            helper.setSubject("Slot Update, Book slot now!!");
