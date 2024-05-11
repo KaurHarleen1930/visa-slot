@@ -61,17 +61,20 @@ public class Main {
                 Elements elements = element.getElementsByTag("tr");
                 for (Element element1 : elements) {
                     System.out.println(element1.text());
-                    emailMessage.append(element1.text()+"\n");
+                    emailMessage.append(element1.text()+"<br>\n");
                     if (element1.child(3).hasClass("earliest") && !(element1.getElementsByClass("earliest").text().equals("N/A"))) {
                         Elements earliest = element1.getElementsByClass("earliest");
                         if (checkDate(earliest)) {
-                            System.out.println("Book slot for - date - " + element1.text());
-                            emailMessage.append("***** BOOK SLOT FOR - DATE DETAILS *****\n" +element1.text()+"\n");
+                          //  System.out.println("Book slot for - date - " + element1.text());
+                            String allAvailableDates = getDetails(element1);
+                            emailMessage.append("<div><span style=\"background-color: yellow;\">*********** BOOK SLOT FOR - DATE DETAILS ***********\n<br>" +element1.text()+"<br></div></span>\n");
+                            emailMessage.append("<div><span style=\"background-color: LightYellow;\">*********** Available Dates for this location ***********\n<br>"+allAvailableDates+"<br></div></span>\n");
                             emailToBeSent = true;
                         }
                     }
                 }
                 if(emailToBeSent) {
+                    System.out.println(emailMessage);
                     sendEmail(emailMessage);
                 }
                 Thread.sleep(120000);
@@ -84,6 +87,29 @@ public class Main {
             }
         }
     }
+
+    private static String getDetails(Element element1) throws IOException {
+        String href = element1.getElementsByTag("a").attr("href").toString();
+        URL urlHref = new URL("https://visaslots.info" + href);
+        HttpURLConnection connectionHref = (HttpURLConnection) urlHref.openConnection();
+        connectionHref.setRequestMethod("GET");
+        connectionHref.getResponseMessage();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connectionHref.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        reader.close();
+        Document document = Jsoup.parse(sb.toString());
+        Elements allAvailableDates = document.getElementsByClass("updated");
+        StringBuilder availDates = new StringBuilder();
+        for(Element availableDates: allAvailableDates){
+            availDates = availDates.append(availableDates.parents().get(0).text()+"<br>\n");
+        }
+        return availDates.toString();
+    }
+
     private static void sendEmail(StringBuilder emailMessage) {
         try{
 
@@ -110,7 +136,7 @@ public class Main {
             message.addRecipients(Message.RecipientType.TO, new InternetAddress(to[1]).toString());
             message.addRecipients(Message.RecipientType.TO, new InternetAddress(to[2]).toString());
             message.setSubject("Slot Update, Book slot now!!");
-            message.setText("Slots - "+ emailMessage.toString());
+            message.setContent("<html><head><style>body { font-family: Arial, sans-serif; }</style></head><body><h1> Slots - </h1><p>"+ emailMessage.toString() + "</p></body></html>","text/html");
             Transport.send(message);
 //            helper.setTo(emails);
 //            helper.setSubject("Slot Update, Book slot now!!");
@@ -128,7 +154,7 @@ public class Main {
         Date date;
         try{
             date = dateFormat.parse(datePresent);
-            Date june1= dateFormat.parse("2024 Jun 1");
+            Date june1= dateFormat.parse("2024 May 25");
             Date august15= dateFormat.parse("2024 Aug 15");
             if(date.after(june1)&& date.before(august15))
             {
