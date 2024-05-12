@@ -37,8 +37,9 @@ import java.util.Properties;
 public class Main {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(Main.class, args);
+        StringBuilder earlierHighlightedString = new StringBuilder();
         while(true) {
             try {
                 URL url = new URL("https://visaslots.info/");
@@ -66,10 +67,13 @@ public class Main {
                     emailMessage.append("<tr>"+element1.html()+"</tr>");
                     if (element1.child(3).hasClass("earliest") && !(element1.getElementsByClass("earliest").text().equals("N/A"))) {
                         Elements earliest = element1.getElementsByClass("earliest");
-                        if (checkDate(earliest)) {
+                        if (checkDate(earliest) && !(earlierHighlightedString.toString()).contains(element1.html())) {
                           //  System.out.println("Book slot for - date - " + element1.text());
+
                             String allAvailableDates = getDetails(element1);
                             emailMessage.append("<tr style=\"background-color: yellow;\">" +element1.html()+"</tr>");
+                            earlierHighlightedString.setLength(0);
+                            earlierHighlightedString.append(element1.html());
                             availableList.append(allAvailableDates);
                             emailToBeSent = true;
                         }
@@ -84,7 +88,7 @@ public class Main {
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                Thread.sleep(300000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -159,9 +163,9 @@ public class Main {
         Date date;
         try{
             date = dateFormat.parse(datePresent);
-            Date june1= dateFormat.parse("2024 May 25");
-            Date august15= dateFormat.parse("2024 Aug 15");
-            if(date.after(june1)&& date.before(august15))
+            Date june1= dateFormat.parse("2024 May 19");
+            Date august15= dateFormat.parse("2024 Aug 16");
+            if(date.after(june1) && date.before(august15))
             {
                 return true;
             }
