@@ -7,6 +7,7 @@ package com.fi.slot;
 //import jakarta.mail.Transport;
 //import jakarta.mail.internet.InternetAddress;
 //import jakarta.mail.internet.MimeMessage;
+import com.fi.slot.book.SlotUpdateBot;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,7 +16,9 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 //import jakarta.mail.Message;
 import javax.mail.*;
 import javax.mail.internet.*;
@@ -37,7 +40,10 @@ import java.util.Properties;
 public class Main {
 
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, TelegramApiException {
+        SlotUpdateBot slotUpdateBot = new SlotUpdateBot();
+        TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+        telegramBotsApi.registerBot(slotUpdateBot);
         SpringApplication.run(Main.class, args);
         StringBuilder earlierHighlightedString = new StringBuilder();
         while(true) {
@@ -59,6 +65,7 @@ public class Main {
                 //           sendEmail(element);
                 StringBuilder emailMessage = new StringBuilder();
                 StringBuilder availableList = new StringBuilder();
+                StringBuilder teleMsg = new StringBuilder();
                 boolean emailToBeSent= false;
                 Elements elements = element.getElementsByTag("tr");
                 emailMessage.append("<table style=\"\"><tbody>");
@@ -75,6 +82,8 @@ public class Main {
                             earlierHighlightedString.setLength(0);
                             earlierHighlightedString.append(element1.html());
                             availableList.append(allAvailableDates);
+                            Elements elementByTagTd = element1.getElementsByTag("td");
+                            teleMsg.append("Type of Visa: "+ elementByTagTd.get(1).text()+"\n Location: " + elementByTagTd.get(0).text()+ "\n Earliest Slot: "+ elementByTagTd.get(3).text() + "\n Number of Slots: "+ elementByTagTd.get(4).text());
                             emailToBeSent = true;
                         }
                     }
@@ -82,6 +91,8 @@ public class Main {
                 if(emailToBeSent) {
                     emailMessage.append("</tbody></table>").append(availableList);
          //           System.out.println(emailMessage);
+         //           sendMessageTelegram(emailMessage);
+                    slotUpdateBot.sendSlotUpdate(teleMsg.toString());
                     sendEmail(emailMessage);
                 }
                 Thread.sleep(120000);
@@ -94,6 +105,15 @@ public class Main {
             }
         }
     }
+//
+//    private static void sendMessageTelegram(StringBuilder emailMessage) {
+//        TelegramBotsApi botsApi = new TelegramBotsApi();
+//        try {
+//            telegramBotsApi.registerBot(new SlotUpdateBot());
+//        }  catch (TelegramApiException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private static String getDetails(Element element1) throws IOException {
         String href = element1.getElementsByTag("a").attr("href").toString();
@@ -115,6 +135,7 @@ public class Main {
         for(Element availableDates: allAvailableDates){
 
             availDates = availDates.append("<tr style=\"background-color: LightYellow;\">"+availableDates.parents().get(0).html()+"</tr>");
+
         }
         return availDates.append("</tbody></table>").toString();
     }
