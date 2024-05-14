@@ -45,7 +45,7 @@ public class Main {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(slotUpdateBot);
         SpringApplication.run(Main.class, args);
-        StringBuilder earlierHighlightedString = new StringBuilder();
+//        StringBuilder earlierHighlightedString = new StringBuilder();
         while(true) {
             try {
                 URL url = new URL("https://visaslots.info/");
@@ -74,13 +74,13 @@ public class Main {
                     emailMessage.append("<tr>"+element1.html()+"</tr>");
                     if (element1.child(3).hasClass("earliest") && !(element1.getElementsByClass("earliest").text().equals("N/A"))) {
                         Elements earliest = element1.getElementsByClass("earliest");
-                        if (checkDate(earliest) && !(earlierHighlightedString.toString()).contains(element1.html())) {
+                        if (checkDate(earliest)) {
                           //  System.out.println("Book slot for - date - " + element1.text());
 
                             String allAvailableDates = getDetails(element1);
                             emailMessage.append("<tr style=\"background-color: yellow;\">" +element1.html()+"</tr>");
-                            earlierHighlightedString.setLength(0);
-                            earlierHighlightedString.append(element1.html());
+//                            earlierHighlightedString.setLength(0);
+//                            earlierHighlightedString.append(element1.html());
                             availableList.append(allAvailableDates);
                             Elements elementByTagTd = element1.getElementsByTag("td");
                             teleMsg.append("Type of Visa: "+ elementByTagTd.get(1).text()+"\n Location: " + elementByTagTd.get(0).text()+ "\n Earliest Slot: "+ elementByTagTd.get(3).text() + "\n Number of Slots: "+ elementByTagTd.get(4).text()+"\n");
