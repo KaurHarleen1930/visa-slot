@@ -83,7 +83,7 @@ public class Main {
                             earlierHighlightedString.append(element1.html());
                             availableList.append(allAvailableDates);
                             Elements elementByTagTd = element1.getElementsByTag("td");
-                            teleMsg.append("Type of Visa: "+ elementByTagTd.get(1).text()+"\n Location: " + elementByTagTd.get(0).text()+ "\n Earliest Slot: "+ elementByTagTd.get(3).text() + "\n Number of Slots: "+ elementByTagTd.get(4).text());
+                            teleMsg.append("Type of Visa: "+ elementByTagTd.get(1).text()+"\n Location: " + elementByTagTd.get(0).text()+ "\n Earliest Slot: "+ elementByTagTd.get(3).text() + "\n Number of Slots: "+ elementByTagTd.get(4).text()+"\n");
                             emailToBeSent = true;
                         }
                     }
