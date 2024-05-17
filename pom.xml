@@ -53,7 +53,7 @@
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-meta</artifactId>
-            <version>5.1.1</version> <!-- Make sure to use the correct version -->
+            <version>5.1.0</version> <!-- Make sure to use the correct version -->
         </dependency>
     </dependencies>
 </project>
